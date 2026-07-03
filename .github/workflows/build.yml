@@ -23,16 +23,20 @@ jobs:
         tar -xJf openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64.tar.xz
         mv openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64 imagebuilder
 
-    - name: Handle Custom Configuration Files
+    - name: Setup Configuration Overlay
       run: |
+        # Force create the files target block inside the imagebuilder directory
         mkdir -p imagebuilder/files
-        if [ -d "files" ]; then
-          cp -R files/. imagebuilder/files/
+        
+        # Safely sync repository configurations if the folder is populated
+        if [ -d "files" ] && [ "$(ls -A files)" ]; then
+          cp -R files/* imagebuilder/files/
         fi
 
     - name: Run OpenWrt Image Builder
       run: |
         cd imagebuilder
+        # Passing files securely via relative path context execution
         make image PROFILE="glinet_gl-mt300n-v2" FILES="files" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
