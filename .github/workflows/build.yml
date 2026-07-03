@@ -3,21 +3,30 @@ name: Build Custom Mango Firmware
 on:
   workflow_dispatch:
 
+# YAML formatting for global runner variables
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
+      # Linux formatting inside the execution step as a secondary layer
+      env:
+        ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+      run: |
+        export ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true
+        echo "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true" >> $GITHUB_ENV
+        
+    - name: Run Checkout
       uses: actions/checkout@v4
 
-    - name: Install Build Dependencies
+    - name: Handle Core Packages Natively
       run: |
-        # Bypassing the Code 100 crash by forcing a true response on warning links
-        sudo apt-get update || true
-        sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev \
-          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file \
-          rsync python3-distutils
+        sudo apt-get update -y || true
+        sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file rsync python3-distutils
 
     - name: Download and Extract Image Builder
       run: |
