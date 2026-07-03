@@ -15,7 +15,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev \
-          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file
+          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file \
+          rsync python3-distutils
 
     - name: Download and Extract Image Builder
       run: |
@@ -25,10 +26,7 @@ jobs:
 
     - name: Setup Configuration Overlay
       run: |
-        # Force create the files target block inside the imagebuilder directory
         mkdir -p imagebuilder/files
-        
-        # Safely sync repository configurations if the folder is populated
         if [ -d "files" ] && [ "$(ls -A files)" ]; then
           cp -R files/* imagebuilder/files/
         fi
@@ -36,7 +34,6 @@ jobs:
     - name: Run OpenWrt Image Builder
       run: |
         cd imagebuilder
-        # Passing files securely via relative path context execution
         make image PROFILE="glinet_gl-mt300n-v2" FILES="files" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
