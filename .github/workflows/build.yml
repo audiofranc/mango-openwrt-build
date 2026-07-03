@@ -3,7 +3,6 @@ name: Build Custom Mango Firmware
 on:
   workflow_dispatch:
 
-# Modern GitHub Actions flag to force the environment engine forward
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -22,16 +21,25 @@ jobs:
           zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file \
           rsync python3-distutils
 
-    - name: Download OpenWrt 24.10 Image Builder
+    - name: Download OpenWrt 25.12.5 Image Builder
       run: |
+        # Updated directly to the active 25.12.5 download paths
         wget https://openwrt.org
-        tar -xJf openwrt-imagebuilder-24.10.0-ramips-mt76x8.Linux-x86_64.tar.xz
-        mv openwrt-imagebuilder-24.10.0-ramips-mt76x8.Linux-x86_64 imagebuilder
+        tar -xJf openwrt-imagebuilder-25.12.5-ramips-mt76x8.Linux-x86_64.tar.xz
+        mv openwrt-imagebuilder-25.12.5-ramips-mt76x8.Linux-x86_64 imagebuilder
+
+    - name: Setup Configuration Overlay
+      run: |
+        mkdir -p imagebuilder/files
+        if [ -d "files" ] && [ "$(ls -A files)" ]; then
+          cp -R files/* imagebuilder/files/
+        fi
 
     - name: Build Core Firmware Image
       run: |
         cd imagebuilder
-        make image PROFILE="glinet_gl-mt300n-v2" PACKAGES="luci \
+        # Passing your optimized USB, Wireguard, and compilation dependencies
+        make image PROFILE="glinet_gl-mt300n-v2" FILES="files" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
           gawk sed coreutils-sort"
