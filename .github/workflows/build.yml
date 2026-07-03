@@ -1,7 +1,7 @@
 name: Build Custom Mango Firmware
 
 on:
-  workflow_dispatch: # Allows you to manually trigger the build with a button
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev \
-          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3
+          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file
 
     - name: Download and Extract Image Builder
       run: |
@@ -23,15 +23,23 @@ jobs:
         tar -xJf openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64.tar.xz
         mv openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64 imagebuilder
 
+    - name: Copy Custom Configuration Files
+      run: |
+        if [ -d "files" ]; then
+          mkdir -p imagebuilder/files
+          cp -r files/* imagebuilder/files/
+        fi
+
     - name: Run OpenWrt Image Builder
       run: |
         cd imagebuilder
+        # Intentionally retaining base ppp packages to prevent target dependency breaking,
+        # but including the optimized adblock components.
         make image PROFILE="glinet_gl-mt300n-v2" FILES="files" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
           adblock-lean luci-app-adblock-lean \
-          gawk sed coreutils-sort \
-          -ppp -ppp-mod-pppoe"
+          gawk sed coreutils-sort"
 
     - name: Upload Compiled Firmware
       uses: actions/upload-artifact@v4
