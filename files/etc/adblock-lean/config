@@ -1,0 +1,8 @@
+# adblock-lean configuration options
+config_format=v11
+whitelist_mode="0"
+# Optimized for 128MB RAM
+raw_block_lists="hagezi:light hagezi:tif.mini"
+local_blocklist_path="/etc/adblock-lean/blocklist"
+max_file_part_size_KB="8000"
+# ... rest of configuration ...
