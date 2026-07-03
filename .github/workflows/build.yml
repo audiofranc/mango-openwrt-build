@@ -3,9 +3,9 @@ name: Build Custom Mango Firmware
 on:
   workflow_dispatch:
 
-# YAML formatting for global runner variables
+# Modern GitHub Actions flag to force the environment engine forward
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   build:
@@ -13,38 +13,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      # Linux formatting inside the execution step as a secondary layer
-      env:
-        ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-      run: |
-        export ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true
-        echo "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true" >> $GITHUB_ENV
-        
-    - name: Run Checkout
       uses: actions/checkout@v4
 
-    - name: Handle Core Packages Natively
+    - name: Install Linux Build Utilities
       run: |
         sudo apt-get update -y || true
-        sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file rsync python3-distutils
+        sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev \
+          zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file \
+          rsync python3-distutils
 
-    - name: Download and Extract Image Builder
+    - name: Download OpenWrt 24.10 Image Builder
       run: |
         wget https://openwrt.org
-        tar -xJf openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64.tar.xz
-        mv openwrt-imagebuilder-23.05.0-ramips-mt76x8.Linux-x86_64 imagebuilder
+        tar -xJf openwrt-imagebuilder-24.10.0-ramips-mt76x8.Linux-x86_64.tar.xz
+        mv openwrt-imagebuilder-24.10.0-ramips-mt76x8.Linux-x86_64 imagebuilder
 
-    - name: Setup Configuration Overlay
-      run: |
-        mkdir -p imagebuilder/files
-        if [ -d "files" ] && [ "$(ls -A files)" ]; then
-          cp -R files/* imagebuilder/files/
-        fi
-
-    - name: Run OpenWrt Image Builder
+    - name: Build Core Firmware Image
       run: |
         cd imagebuilder
-        make image PROFILE="glinet_gl-mt300n-v2" FILES="files" PACKAGES="luci \
+        make image PROFILE="glinet_gl-mt300n-v2" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
           gawk sed coreutils-sort"
