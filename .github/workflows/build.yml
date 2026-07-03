@@ -1,39 +1,32 @@
 name: Build Custom Mango Firmware
-
 on:
   workflow_dispatch:
-
-# The clean YAML environment variable assignment to step past Node deprecations
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Install Linux Build Utilities
       run: |
-        # Separated package setup to ensure a faulty package repo won't halt the pipeline
         sudo apt-get update -y || true
         sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev \
           zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 file \
-          rsync python3-distutils
+          rsync zstd
 
     - name: Download OpenWrt 25.12.5 Image Builder
       run: |
-        # Pulling directly from the active 25.12.5 stable release catalog
-        wget https://openwrt.org
-        tar -xJf openwrt-imagebuilder-25.12.5-ramips-mt76x8.Linux-x86_64.tar.xz
+        wget -O imagebuilder.tar.zst \
+          https://downloads.openwrt.org/releases/25.12.5/targets/ramips/mt76x8/openwrt-imagebuilder-25.12.5-ramips-mt76x8.Linux-x86_64.tar.zst
+        tar --zstd -xf imagebuilder.tar.zst
         mv openwrt-imagebuilder-25.12.5-ramips-mt76x8.Linux-x86_64 imagebuilder
 
     - name: Build Core Firmware Image
       run: |
         cd imagebuilder
-        # Generating firmware with requested space optimizations and dependencies baked into SquashFS
         make image PROFILE="glinet_gl-mt300n-v2" PACKAGES="luci \
           kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat block-mount \
           luci-proto-wireguard \
