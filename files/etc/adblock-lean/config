@@ -1,29 +1,11 @@
-# adblock-lean configuration - Optimized for GL-MT300N V2 (128MB RAM)
 config_format=v11
-
-# Enable/Disable adblock-lean (1 = enabled, 0 = disabled)
 enabled="1"
-
-# Enable LuCI statistics tracking if installed
 luci_stats="1"
-
-# Remote blocklists: Using HaGeZi Light & Threat Intelligence Mini
-# These are highly optimized to catch 95%+ of ads/trackers with minimal RAM footprint
 raw_block_lists="hagezi:light hagezi:tif.mini"
-
-# Strict whitelist mode (0 = normal blocking, 1 = strict block except whitelisted)
 whitelist_mode="0"
-
-# Local user-defined blocklist and whitelist locations
 local_blocklist_path="/etc/adblock-lean/blocklist"
 local_whitelist_path="/etc/adblock-lean/whitelist"
-
-# Size limits to prevent the router out-of-memory (OOM) crashes during processing
 max_file_part_size_KB="4000"
-
-# DNS Backend configuration (0 = dnsmasq, 1 = unbound)
-dns_backend="0"
-
-# Where to store compiled blocklists (RAM-backed storage to save flash wear)
-dns_config_dir="/tmp/dnsmasq.d"
-
+# DNSMASQ_INDEXES / DNSMASQ_CONF_DIRS intentionally omitted —
+# let `service adblock-lean setup` auto-detect these on first boot,
+# since the conf-dir path differs on 25.12.5 vs older OpenWrt.
